@@ -53,6 +53,7 @@ public class MiaoshaUserService {
     	String mobile = loginVo.getMobile(); 
     	// 判断手机号是否存在
 		MiaoshaUser user = getById(Long.parseLong(mobile));
+System.out.println("here here " + user.getLastLoginDate());
 		if(user == null) {
 			throw new GlobalException( CodeMsg.MOBILE_NOT_EXIST);
 		}
@@ -64,18 +65,46 @@ public class MiaoshaUserService {
 		if(!calcPass.equals(dbPass)) {
 			throw new GlobalException(CodeMsg.PASSWORD_ERROR);
 		}
-		// 生成cookie
+//		// 生成cookie
+//		String token = UUIDUtil.uuid();
+//		redisService.set(MiaoshaUserKey.token, token, user);
+//		
+//		Cookie cookie = new Cookie(COOKI_NAME_TOKEN, token);
+//		cookie.setPath("/");
+//		cookie.setMaxAge(MiaoshaUserKey.TOKEN_EXPIRE);
+//		
+//		response.addCookie(cookie);
 		String token = UUIDUtil.uuid();
+		addCookie(response,token, user);
+		return CodeMsg.SUCCESS;
+	}
+
+	public MiaoshaUser getByToken(HttpServletResponse response, String token) {
+		if(StringUtils.isEmpty(token)) {
+			return null;
+		}
+		MiaoshaUser user = redisService.get(MiaoshaUserKey.token, token, MiaoshaUser.class);
+		// 延长token 有效期
+		if(user != null) {
+			addCookie(response,token, user);
+		}
+		
+		return user; 
+	}
+	
+	private void addCookie(HttpServletResponse response, String token , MiaoshaUser user) {
+		// 生成cookie
+		
 		redisService.set(MiaoshaUserKey.token, token, user);
-System.out.println("test  wow"+ MiaoshaUserKey.token + token);
 		
 		Cookie cookie = new Cookie(COOKI_NAME_TOKEN, token);
 		cookie.setPath("/");
 		cookie.setMaxAge(MiaoshaUserKey.TOKEN_EXPIRE);
 		
 		response.addCookie(cookie);
-		return CodeMsg.SUCCESS;
+		return;
 	}
+
 	// http://blog.csdn.net/tTU1EvLDeLFq5btqiK/article/details/78693323
 //	public boolean updatePassword(String token, long id, String formPass) {
 //		//取user
@@ -94,14 +123,7 @@ System.out.println("test  wow"+ MiaoshaUserKey.token + token);
 //		redisService.set(MiaoshaUserKey.token, token, user);
 //		return true;
 //	}
-	public MiaoshaUser getByToken(String token) {
-		if(StringUtils.isEmpty(token)) {
-			return null;
-		}
-		return redisService.get(MiaoshaUserKey.token, token, MiaoshaUser.class);
-	}
-
-
+	
 //	public MiaoshaUser getByToken(HttpServletResponse response, String token) {
 //		if(StringUtils.isEmpty(token)) {
 //			return null;
