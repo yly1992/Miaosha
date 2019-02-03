@@ -46,6 +46,9 @@ System.out.println("user "+ user.getNickname());
 
 	private String getCookieValue(HttpServletRequest request, String cookiName) {
 		Cookie[] cookies = request.getCookies();
+		if(cookies == null || cookies.length <= 0) {
+			return null;
+		}
 		for(Cookie cookie : cookies) {
 			if(cookie.getName().equals(cookiName)) {
 				return cookie.getValue();
