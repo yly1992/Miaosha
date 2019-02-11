@@ -4,6 +4,7 @@ import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
+import org.apache.ibatis.annotations.Update;
 
 import domain.MiaoshaUser;
 import domain.User;
@@ -16,5 +17,8 @@ public interface MiaoshaUserDao {
 
 	@Insert("insert into miaosha_user(id, name)values(#{id}, #{name})")
 	public long insert(User user);
+	
+	@Update("update miaosha_user set password = #{password} where id = #{id}")
+	public void update(MiaoshaUser toBeUpdate);
 	
 }

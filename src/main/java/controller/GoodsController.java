@@ -1,5 +1,6 @@
 package controller;
-
+import java.util.function.*;
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.servlet.http.Cookie;
@@ -51,7 +52,6 @@ public class GoodsController {
 	public String toGoods(Model model, MiaoshaUser user, HttpServletRequest request, HttpServletResponse response
 			) {
 		model.addAttribute("user", user);
-		
 		List<GoodsVo> goodsList = goodsService.listGoodsVo();
 		List<Goods> allGoods =  goodsService.allGoods();
 		model.addAttribute("goodsList" , goodsList);
@@ -61,14 +61,13 @@ public class GoodsController {
 		if(!StringUtils.isEmpty(html)) {
 			return html;
 		}
-		
+	        
 		// 手动渲染
 		WebContext ctx = new WebContext(request, response, request.getServletContext(), request.getLocale(), model.asMap());
 		html = thymeleafViewResolver.getTemplateEngine().process("goods_list", ctx);
 		if(!StringUtils.isEmpty(html)) {
 			redisService.set(GoodsKey.getGoodsList,"", html);
 		}
-		System.out.println(html);
 		return html;
 	}
 	
@@ -115,7 +114,7 @@ public class GoodsController {
 		if(!StringUtils.isEmpty(html)) {
 			redisService.set(GoodsKey.getGoodsDetail,"", html);
 		}
-				
+
 		return html;
 	}
 	
