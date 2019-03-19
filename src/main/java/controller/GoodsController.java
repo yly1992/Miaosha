@@ -30,7 +30,7 @@ import vo.GoodsVo;
 import org.springframework.web.util.WebUtils;
 import org.thymeleaf.context.WebContext;
 import org.thymeleaf.spring5.view.ThymeleafViewResolver;
-
+// git commit test master
 @Controller
 @RequestMapping("/goods")
 public class GoodsController {
