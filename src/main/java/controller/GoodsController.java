@@ -21,8 +21,10 @@ import domain.Goods;
 import domain.MiaoshaUser;
 import redis.GoodsKey;
 import redis.RedisService;
+import result.Result;
 import service.GoodsService;
 import service.MiaoshaUserService;
+import vo.GoodsDetailVo;
 import vo.GoodsVo;
 
 import org.springframework.web.util.WebUtils;
@@ -71,12 +73,12 @@ public class GoodsController {
 		return html;
 	}
 	
-	@RequestMapping(value = "/to_detail/{goodsId}", produces="text/html")
+	@RequestMapping(value = "/to_detail2/{goodsId}", produces="text/html")
 	@ResponseBody
-	public String toDetail(Model model, MiaoshaUser user, @PathVariable("goodsId")long goodsId, HttpServletRequest request, HttpServletResponse response) {
+	public String toDetail2(Model model, MiaoshaUser user, @PathVariable("goodsId")long goodsId, HttpServletRequest request, HttpServletResponse response) {
 		model.addAttribute("user", user);
 		
-		//去缓存
+		//取缓存
 		String html = redisService.get(GoodsKey.getGoodsDetail,""+goodsId, String.class);
 		if(!StringUtils.isEmpty(html)) {
 			return html;
@@ -90,7 +92,7 @@ public class GoodsController {
 		long startAt = goods.getStart_Date().getTime();
 		long endAt = goods.getEnd_Date().getTime();
 		long now = System.currentTimeMillis();
-// 0 秒杀未开始 ，1 秒杀 进行中 ， 2 秒杀已结束
+		// 0 秒杀未开始 ，1 秒杀 进行中 ， 2 秒杀已结束
 		int miaoshaStatus = 0;
 		int remianSeconds = 0;
 		
@@ -116,6 +118,37 @@ public class GoodsController {
 		}
 
 		return html;
+	}
+	
+	@RequestMapping(value = "/to_detail/{goodsId}", produces="text/html")
+	@ResponseBody
+	public Result<GoodsDetailVo> toDetail(Model model, MiaoshaUser user, @PathVariable("goodsId")long goodsId, HttpServletRequest request, HttpServletResponse response) {
+		
+		GoodsVo goods = goodsService.getGoodsVoByGoodsId(goodsId);
+		
+		long startAt = goods.getStart_Date().getTime();
+		long endAt = goods.getEnd_Date().getTime();
+		long now = System.currentTimeMillis();
+// 0 秒杀未开始 ，1 秒杀 进行中 ， 2 秒杀已结束
+		int miaoshaStatus = 0;
+		int remainSeconds = 0;
+		
+		if(now < startAt) {
+			miaoshaStatus = 0;
+			remainSeconds = (int)((startAt - now)/ 100);
+		}else if(now > endAt){
+			miaoshaStatus = 2;
+			remainSeconds = -1;
+		}else {
+			miaoshaStatus = 1;
+			remainSeconds  = 0;
+		}
+		GoodsDetailVo gdvo =  new GoodsDetailVo();
+		gdvo.setGoods(goods);
+		gdvo.setMiaoshaStatus(miaoshaStatus);
+		gdvo.setRemianSeconds(remainSeconds);
+		gdvo.setUser(user);
+		return Result.success(gdvo);
 	}
 	
 }
